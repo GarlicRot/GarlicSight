@@ -1,0 +1,8 @@
+{
+  "Plugin-Class": "org.garlicsight.GarlicSightPlugin",
+  "Name": "GarlicSight",
+  "Version": "1.0",
+  "Description": "Crosshair info",
+  "Authors": ["Garlicrot"],
+  "Minecraft-Versions": ["1.21"]
+}
