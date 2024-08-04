@@ -1,4 +1,5 @@
-# GarlicSight
+# GarlicSight ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/GarlicRot/GarlicSight/total)
+
 A RusherHacks Crosshair Info Plugin - GarlicSight
 
 <p align="center">
