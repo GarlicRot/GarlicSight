@@ -1,25 +1,35 @@
-# GarlicSight ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/GarlicRot/GarlicSight/total)
-
-A RusherHacks Crosshair Info Plugin - GarlicSight
-
 <p align="center">
-  </ul>
-  <a href="https://ibb.co/qL6YdBL">
-    <img src="https://i.ibb.co/Mydksny/hudinfo.png" alt="hudinfo" border="0" width="250">
-  </a>
+    <img src="assets/GarlicSight.png" alt="GarlicSight Logo" width="300">
 </p>
 
-  <ul>
-    <li><strong>Display Block Information:</strong> Details about the block you're targeting.</li>
-    <li><strong>Display Entity Information:</strong> Details about mobs, players, and other entities.</li>
-    <li><strong>Customize Display Settings:</strong> Toggle titles like 'Block:', 'Entity:', 'Position:', or 'Health'.</li>
+<h1 align="center">GarlicSight</h1>
 
-<br>
+<p align="center">A RusherHacks Crosshair Info Plugin - GarlicSight</p>
+
 <p align="center">
-  <a href="https://ibb.co/yg0WBzz">
-    <img src="https://i.ibb.co/VMV2pFF/blockinfo.png" alt="blockinfo" border="0" width="400">
-  </a>
-  <a href="https://ibb.co/jyCrkMd">
-    <img src="https://i.ibb.co/9bxrHTJ/entityinfo.png" alt="entityinfo" border="0" width="400">
-  </a>
+  <img src="https://img.shields.io/github/downloads/GarlicRot/GarlicSight/total?label=Downloads" alt="GitHub Downloads (all assets, all releases)">
+  <img src="https://img.shields.io/badge/Minecraft-1.20.1%20--%201.21-62b47a?style=flat&logo=minecraft&logoColor=white" alt="Minecraft Version">
 </p>
+
+## Features:
+
+- **Display Block Information:** Details about the block you're targeting.
+- **Display Entity Information:** Details about mobs, players, and other entities.
+- **Customize Display Settings:** Toggle titles like 'Block:', 'Entity:', 'Position:', or 'Health'.
+
+## HUD Element Settings:
+
+<p align="center">
+    <img src="assets/hudinfo.png" alt="HUD Information" width="250">
+</p>
+
+## Screenshots:
+
+<p align="center">
+  <img src="assets/blockinfo.png" alt="Block Information" width="400">
+  <img src="assets/entityinfo.png" alt="Entity Information" width="400">
+</p>
+
+## Contributing:
+
+Contributions are welcome! Please see the [CONTRIBUTING.md](CONTRIBUTING.md) file for guidelines on how to contribute to this project.
