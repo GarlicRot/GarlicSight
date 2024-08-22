@@ -19,7 +19,7 @@
 
 ## HUD Element Settings:
 
-<p align="center">
+<p align="left">
     <img src="assets/hudinfo.png" alt="HUD Information" width="250">
 </p>
 
