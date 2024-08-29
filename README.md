@@ -12,26 +12,26 @@
   <img src="https://img.shields.io/badge/%F0%9F%A7%84-Approved%20%E2%9C%94%EF%B8%8F-blue?style=flat" alt="🧄 Approved ✔️">
 </p>
 
+## Features
 
-## Features:
+- **Block Information Display:** Get detailed information about the block you're targeting, including its type, position, and special properties like redstone power levels.
+- **Entity Information Display:** View details about mobs, players, and other entities, including their health and type.
+- **Redstone Component Info:** Show specific details about Redstone components such as power levels, active/inactive states, delays, and modes.
+- **Customizable HUD:** Adjust display settings with toggles for titles like 'Block:', 'Entity:', 'Position:', and 'Health'.
 
-- **Display Block Information:** Details about the block you're targeting.
-- **Display Entity Information:** Details about mobs, players, and other entities.
-- **Customize Display Settings:** Toggle titles like 'Block:', 'Entity:', 'Position:', or 'Health'.
-
-## HUD Element Settings:
+## HUD Element Settings
 
 <p align="left">
     <img src="assets/hudinfo.png" alt="HUD Information" width="250">
 </p>
 
-## Screenshots:
+## Screenshots
 
-<p align="center">
+<p align="left">
   <img src="assets/blockinfo.png" alt="Block Information" width="400">
   <img src="assets/entityinfo.png" alt="Entity Information" width="400">
 </p>
 
-## Contributing:
+## Contributing
 
-Contributions are welcome! Please see the [CONTRIBUTING.md](CONTRIBUTING.md) file for guidelines on how to contribute to this project.
+Contributions are welcome! Please check out the [CONTRIBUTING.md](CONTRIBUTING.md) file for guidelines on how to contribute to this project.
