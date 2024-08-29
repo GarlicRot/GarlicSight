@@ -3,10 +3,13 @@ package org.garlicsight.hud;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.ComparatorMode;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.level.block.state.BlockState;
 import org.rusherhack.client.api.feature.hud.TextHudElement;
 import org.rusherhack.core.setting.BooleanSetting;
 import org.rusherhack.core.setting.StringSetting;
@@ -34,6 +37,9 @@ public class GarlicSightHudElement extends TextHudElement {
     private final BooleanSetting entityHealth = new BooleanSetting("Entity Health", true);
     private final BooleanSetting healthTitle = new BooleanSetting("'Health:' Title", true);
 
+    // Redstone information settings
+    private final BooleanSetting redstoneInfo = new BooleanSetting("Redstone Info", true);
+
     /**
      * Constructor for the GarlicSight HUD element. Sets up the default
      * settings and registers them.
@@ -49,8 +55,12 @@ public class GarlicSightHudElement extends TextHudElement {
         entityInfo.addSubSettings(entityTitle, entityHealth);
         entityHealth.addSubSettings(healthTitle);
 
+        // Set up sub-settings for redstone information
+        BooleanSetting redstoneTitle = new BooleanSetting("'Redstone:' Title", true);
+        redstoneInfo.addSubSettings(redstoneTitle);
+
         // Register the settings with the framework
-        this.registerSettings(titleSetting, blockInfo, entityInfo);
+        this.registerSettings(titleSetting, blockInfo, entityInfo, redstoneInfo);
 
         // Set the default snap point for the HUD element
         this.setSnapPoint(SnapPoint.TOP_LEFT);
@@ -87,13 +97,28 @@ public class GarlicSightHudElement extends TextHudElement {
 
         switch (hitResult.getType()) {
             case BLOCK:
+                BlockHitResult blockHit = (BlockHitResult) hitResult;
+                BlockState blockState = minecraft.level.getBlockState(blockHit.getBlockPos());
+
+                // Check for block information
                 if (blockInfo.getValue()) {
-                    BlockHitResult blockHit = (BlockHitResult) hitResult;
-                    BlockState blockState = minecraft.level.getBlockState(blockHit.getBlockPos());
                     if (blockTitle.getValue()) {
                         info.append("Block: ");
                     }
                     info.append(blockState.getBlock().getName().getString());
+
+                    // Add a colon for specific redstone components
+                    boolean needsColon = blockState.is(Blocks.REDSTONE_TORCH) ||
+                            blockState.is(Blocks.LEVER) ||
+                            blockState.is(Blocks.REDSTONE_BLOCK) ||
+                            blockState.is(Blocks.TRIPWIRE_HOOK) ||
+                            blockState.is(Blocks.STICKY_PISTON) ||
+                            blockState.is(Blocks.PISTON);
+
+                    if (redstoneInfo.getValue() && needsColon) {
+                        info.append(": ");
+                    }
+
                     if (blockPosition.getValue()) {
                         info.append('\n');
                         if (positionTitle.getValue()) {
@@ -102,7 +127,48 @@ public class GarlicSightHudElement extends TextHudElement {
                         info.append(blockHit.getBlockPos().toShortString());
                     }
                 }
+
+                // Add a space between block info and redstone info
+                if (redstoneInfo.getValue()) {
+                    info.append('\n');
+                }
+
+                // Check for redstone information
+                if (redstoneInfo.getValue()) {
+                    if (blockState.is(Blocks.REDSTONE_WIRE)) {
+                        int powerLevel = blockState.getValue(BlockStateProperties.POWER);
+                        info.append("Power: ").append(powerLevel);
+                    } else if (blockState.is(Blocks.REDSTONE_TORCH)) {
+                        boolean isActive = blockState.getValue(BlockStateProperties.LIT);
+                        info.append(isActive ? "Active" : "Inactive");
+                    } else if (blockState.is(Blocks.REDSTONE_BLOCK)) {
+                        info.append("Constant Power");
+                    } else if (blockState.is(Blocks.REPEATER)) {
+                        int delay = blockState.getValue(BlockStateProperties.DELAY);
+                        boolean isLocked = blockState.getValue(BlockStateProperties.LOCKED);
+                        info.append("Delay: ").append(delay).append(" ticks");
+                        if (isLocked) {
+                            info.append("\nLocked");
+                        }
+                    } else if (blockState.is(Blocks.COMPARATOR)) {
+                        ComparatorMode mode = blockState.getValue(BlockStateProperties.MODE_COMPARATOR);
+                        info.append("Mode: ").append(mode == ComparatorMode.SUBTRACT ? "Subtract" : "Compare");
+                    } else if (blockState.is(Blocks.LEVER)) {
+                        boolean isPowered = blockState.getValue(BlockStateProperties.POWERED);
+                        info.append(isPowered ? "On" : "Off");
+                    } else if (blockState.is(Blocks.STICKY_PISTON) || blockState.is(Blocks.PISTON)) {
+                        boolean isExtended = blockState.getValue(BlockStateProperties.EXTENDED);
+                        info.append(isExtended ? "Extended" : "Retracted");
+                    } else if (blockState.is(Blocks.NOTE_BLOCK)) {
+                        int pitch = blockState.getValue(BlockStateProperties.NOTE);
+                        info.append("Pitch: ").append(pitch);
+                    } else if (blockState.is(Blocks.TRIPWIRE_HOOK)) {
+                        boolean isPowered = blockState.getValue(BlockStateProperties.POWERED);
+                        info.append(isPowered ? "Activated" : "Deactivated");
+                    }
+                }
                 break;
+
             case ENTITY:
                 if (entityInfo.getValue()) {
                     EntityHitResult entityHit = (EntityHitResult) hitResult;
@@ -116,15 +182,14 @@ public class GarlicSightHudElement extends TextHudElement {
                         if (healthTitle.getValue()) {
                             info.append("Health: ");
                         }
-                        info.append(
-                                String.format("%.1f / %.1f", livingEntity.getHealth(), livingEntity.getMaxHealth()));
+                        info.append(String.format("%.1f / %.1f", livingEntity.getHealth(), livingEntity.getMaxHealth()));
                     }
                 }
                 break;
+
             default:
                 return "";
         }
-
 
         return info.toString();
     }
