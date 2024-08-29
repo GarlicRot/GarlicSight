@@ -30,6 +30,7 @@
 <p align="left">
   <img src="assets/blockinfo.png" alt="Block Information" width="400">
   <img src="assets/entityinfo.png" alt="Entity Information" width="400">
+<img src="assets/redstoneinfo.png" alt="Entity Information" width="600">
 </p>
 
 ## Contributing
