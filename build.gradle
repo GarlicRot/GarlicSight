@@ -107,7 +107,7 @@ loom {
     }
 }
 
-def targetJavaVersion = 21
+def targetJavaVersion = project.java_version
 
 java.sourceCompatibility = JavaLanguageVersion.of(targetJavaVersion)
 java.targetCompatibility = JavaLanguageVersion.of(targetJavaVersion)
