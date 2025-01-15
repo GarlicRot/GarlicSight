@@ -18,8 +18,10 @@ jobs:
 
       - name: Update plugin version in gradle.properties
         run: |
-          current_version=$(grep '^plugin_version =' gradle.properties | cut -d' ' -f3)
-          IFS='.' read -r major minor patch <<< "$current_version"
+          git fetch --tags --force
+          latest_tag=$(git describe --tags $(git rev-list --tags --max-count=1) || echo "v0.0.0")
+          version=${latest_tag#v}
+          IFS='.' read -r major minor patch <<< "$version"
           new_patch=$((patch + 1))
           new_version="$major.$minor.$new_patch"
           sed -i "s/^plugin_version = .*/plugin_version = $new_version/" gradle.properties
@@ -69,8 +71,10 @@ jobs:
 
       - name: Update plugin version in gradle.properties
         run: |
-          current_version=$(grep '^plugin_version =' gradle.properties | cut -d' ' -f3)
-          IFS='.' read -r major minor patch <<< "$current_version"
+          git fetch --tags --force
+          latest_tag=$(git describe --tags $(git rev-list --tags --max-count=1) || echo "v0.0.0")
+          version=${latest_tag#v}
+          IFS='.' read -r major minor patch <<< "$version"
           new_patch=$((patch + 1))
           new_version="$major.$minor.$new_patch"
           sed -i "s/^plugin_version = .*/plugin_version = $new_version/" gradle.properties
