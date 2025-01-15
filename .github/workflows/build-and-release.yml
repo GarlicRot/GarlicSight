@@ -1,1 +1,160 @@
+name: Build and Release Plugin
 
+on:
+  workflow_dispatch:  # Manually triggered workflow
+
+jobs:
+  build-master:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Check out master branch
+        uses: actions/checkout@v4
+        with:
+          ref: master
+
+      - name: Set executable permissions for gradlew
+        run: chmod +x ./gradlew
+
+      - name: Update plugin version in gradle.properties
+        run: |
+          current_version=$(grep '^plugin_version =' gradle.properties | cut -d' ' -f3)
+          IFS='.' read -r major minor patch <<< "$current_version"
+          new_patch=$((patch + 1))
+          new_version="$major.$minor.$new_patch"
+          sed -i "s/^plugin_version = .*/plugin_version = $new_version/" gradle.properties
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add gradle.properties
+          git commit -m "Update plugin version to $new_version"
+          git push origin master
+          echo "NEW_VERSION=$new_version" >> $GITHUB_ENV
+
+      - name: Verify Gradle Wrapper
+        run: ./gradlew --version
+
+      - name: Gradle Wrapper Verification
+        uses: gradle/wrapper-validation-action@v1
+
+      - name: Setup JDK for Java 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Build Plugin for Master (1.21.4)
+        run: ./gradlew build
+
+      - name: Rename and Upload artifact for master branch (1.21.4)
+        run: mv build/libs/GarlicSight-*.jar build/libs/GarlicSight-1.21.4.jar
+
+      - name: Upload artifact for master branch (1.21.4)
+        uses: actions/upload-artifact@v4
+        with:
+          name: GarlicSight-master
+          path: build/libs/GarlicSight-1.21.4.jar
+
+  build-2b:
+    needs: build-master
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Check out 2b branch
+        uses: actions/checkout@v4
+        with:
+          ref: 2b
+
+      - name: Set executable permissions for gradlew
+        run: chmod +x ./gradlew
+
+      - name: Update plugin version in gradle.properties
+        run: |
+          current_version=$(grep '^plugin_version =' gradle.properties | cut -d' ' -f3)
+          IFS='.' read -r major minor patch <<< "$current_version"
+          new_patch=$((patch + 1))
+          new_version="$major.$minor.$new_patch"
+          sed -i "s/^plugin_version = .*/plugin_version = $new_version/" gradle.properties
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add gradle.properties
+          git commit -m "Update plugin version to $new_version"
+          git push origin 2b
+          echo "NEW_VERSION=$new_version" >> $GITHUB_ENV
+
+      - name: Verify Gradle Wrapper
+        run: ./gradlew --version
+
+      - name: Gradle Wrapper Verification
+        uses: gradle/wrapper-validation-action@v1
+
+      - name: Setup JDK for Java 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Build Plugin for 2b (1.20.4)
+        run: ./gradlew build
+
+      - name: Rename and Upload artifact for 2b branch (1.20.4)
+        run: mv build/libs/GarlicSight-*.jar build/libs/GarlicSight-1.20.4.jar
+
+      - name: Upload artifact for 2b branch (1.20.4)
+        uses: actions/upload-artifact@v4
+        with:
+          name: GarlicSight-2b
+          path: build/libs/GarlicSight-1.20.4.jar
+
+  release:
+    needs: [build-master, build-2b]
+    runs-on: ubuntu-24.04
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Download build artifact (master)
+        uses: actions/download-artifact@v4
+        with:
+          name: GarlicSight-master
+          path: GarlicSight-master
+
+      - name: Download build artifact (2b)
+        uses: actions/download-artifact@v4
+        with:
+          name: GarlicSight-2b
+          path: GarlicSight-2b
+
+      - name: Get and increment latest tag
+        id: get_tag
+        run: |
+          git fetch --tags --force
+          latest_tag=$(git describe --tags $(git rev-list --tags --max-count=1) || echo "v0.0.0")
+          version=${latest_tag#v}
+          IFS='.' read -r major minor patch <<< "$version"
+          new_patch=$((patch + 1))
+          new_tag="v$major.$minor.$new_patch"
+          echo "NEW_TAG=$new_tag" >> $GITHUB_ENV
+
+      - name: Create and push new tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git fetch --unshallow --tags
+          git tag ${{ env.NEW_TAG }}
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} ${{ env.NEW_TAG }}
+
+      - name: Create GitHub Release
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "${{ env.NEW_TAG }}"
+          prerelease: false
+          files: |
+            GarlicSight-master/GarlicSight-1.21.4.jar
+            GarlicSight-2b/GarlicSight-1.20.4.jar
