@@ -100,6 +100,16 @@ public class GarlicSightHudElement extends TextHudElement {
                 BlockHitResult blockHit = (BlockHitResult) hitResult;
                 BlockState blockState = minecraft.level.getBlockState(blockHit.getBlockPos());
 
+                String redstoneText = redstoneInfo.getValue() ? getRedstoneText(blockState) : "";
+
+                // Add a colon for specific redstone components
+                boolean needsColon = blockState.is(Blocks.REDSTONE_TORCH) ||
+                        blockState.is(Blocks.LEVER) ||
+                        blockState.is(Blocks.REDSTONE_BLOCK) ||
+                        blockState.is(Blocks.TRIPWIRE_HOOK) ||
+                        blockState.is(Blocks.STICKY_PISTON) ||
+                        blockState.is(Blocks.PISTON);
+
                 // Check for block information
                 if (blockInfo.getValue()) {
                     if (blockTitle.getValue()) {
@@ -107,20 +117,12 @@ public class GarlicSightHudElement extends TextHudElement {
                     }
                     info.append(blockState.getBlock().getName().getString());
 
-                    // Add a colon for specific redstone components
-                    boolean needsColon = blockState.is(Blocks.REDSTONE_TORCH) ||
-                            blockState.is(Blocks.LEVER) ||
-                            blockState.is(Blocks.REDSTONE_BLOCK) ||
-                            blockState.is(Blocks.TRIPWIRE_HOOK) ||
-                            blockState.is(Blocks.STICKY_PISTON) ||
-                            blockState.is(Blocks.PISTON);
-
-                    if (redstoneInfo.getValue() && needsColon) {
-                        info.append(": ");
+                    if (!redstoneText.isEmpty() && needsColon) {
+                        info.append(": ").append(redstoneText);
                     }
 
                     if (blockPosition.getValue()) {
-                        info.append('\n');
+                        appendSeparator(info);
                         if (positionTitle.getValue()) {
                             info.append("Pos: ");
                         }
@@ -128,44 +130,9 @@ public class GarlicSightHudElement extends TextHudElement {
                     }
                 }
 
-                // Add a space between block info and redstone info
-                if (redstoneInfo.getValue()) {
-                    info.append('\n');
-                }
-
-                // Check for redstone information
-                if (redstoneInfo.getValue()) {
-                    if (blockState.is(Blocks.REDSTONE_WIRE)) {
-                        int powerLevel = blockState.getValue(BlockStateProperties.POWER);
-                        info.append("Power: ").append(powerLevel);
-                    } else if (blockState.is(Blocks.REDSTONE_TORCH)) {
-                        boolean isActive = blockState.getValue(BlockStateProperties.LIT);
-                        info.append(isActive ? "Active" : "Inactive");
-                    } else if (blockState.is(Blocks.REDSTONE_BLOCK)) {
-                        info.append("Constant Power");
-                    } else if (blockState.is(Blocks.REPEATER)) {
-                        int delay = blockState.getValue(BlockStateProperties.DELAY);
-                        boolean isLocked = blockState.getValue(BlockStateProperties.LOCKED);
-                        info.append("Delay: ").append(delay).append(" ticks");
-                        if (isLocked) {
-                            info.append("\nLocked");
-                        }
-                    } else if (blockState.is(Blocks.COMPARATOR)) {
-                        ComparatorMode mode = blockState.getValue(BlockStateProperties.MODE_COMPARATOR);
-                        info.append("Mode: ").append(mode == ComparatorMode.SUBTRACT ? "Subtract" : "Compare");
-                    } else if (blockState.is(Blocks.LEVER)) {
-                        boolean isPowered = blockState.getValue(BlockStateProperties.POWERED);
-                        info.append(isPowered ? "On" : "Off");
-                    } else if (blockState.is(Blocks.STICKY_PISTON) || blockState.is(Blocks.PISTON)) {
-                        boolean isExtended = blockState.getValue(BlockStateProperties.EXTENDED);
-                        info.append(isExtended ? "Extended" : "Retracted");
-                    } else if (blockState.is(Blocks.NOTE_BLOCK)) {
-                        int pitch = blockState.getValue(BlockStateProperties.NOTE);
-                        info.append("Pitch: ").append(pitch);
-                    } else if (blockState.is(Blocks.TRIPWIRE_HOOK)) {
-                        boolean isPowered = blockState.getValue(BlockStateProperties.POWERED);
-                        info.append(isPowered ? "Activated" : "Deactivated");
-                    }
+                if (!redstoneText.isEmpty() && (!needsColon || !blockInfo.getValue())) {
+                    appendSeparator(info);
+                    info.append(redstoneText);
                 }
                 break;
 
@@ -178,7 +145,7 @@ public class GarlicSightHudElement extends TextHudElement {
                     }
                     info.append(entity.getName().getString());
                     if (entity instanceof LivingEntity livingEntity && entityHealth.getValue()) {
-                        info.append('\n');
+                        appendSeparator(info);
                         if (healthTitle.getValue()) {
                             info.append("Health: ");
                         }
@@ -192,6 +159,45 @@ public class GarlicSightHudElement extends TextHudElement {
         }
 
         return info.toString();
+    }
+
+    private void appendSeparator(StringBuilder info) {
+        if (info.length() > 0) {
+            info.append(" | ");
+        }
+    }
+
+    private String getRedstoneText(BlockState blockState) {
+        if (blockState.is(Blocks.REDSTONE_WIRE)) {
+            int powerLevel = blockState.getValue(BlockStateProperties.POWER);
+            return "Power: " + powerLevel;
+        } else if (blockState.is(Blocks.REDSTONE_TORCH)) {
+            boolean isActive = blockState.getValue(BlockStateProperties.LIT);
+            return isActive ? "Active" : "Inactive";
+        } else if (blockState.is(Blocks.REDSTONE_BLOCK)) {
+            return "Constant Power";
+        } else if (blockState.is(Blocks.REPEATER)) {
+            int delay = blockState.getValue(BlockStateProperties.DELAY);
+            boolean isLocked = blockState.getValue(BlockStateProperties.LOCKED);
+            return isLocked ? "Delay: " + delay + " ticks | Locked" : "Delay: " + delay + " ticks";
+        } else if (blockState.is(Blocks.COMPARATOR)) {
+            ComparatorMode mode = blockState.getValue(BlockStateProperties.MODE_COMPARATOR);
+            return "Mode: " + (mode == ComparatorMode.SUBTRACT ? "Subtract" : "Compare");
+        } else if (blockState.is(Blocks.LEVER)) {
+            boolean isPowered = blockState.getValue(BlockStateProperties.POWERED);
+            return isPowered ? "On" : "Off";
+        } else if (blockState.is(Blocks.STICKY_PISTON) || blockState.is(Blocks.PISTON)) {
+            boolean isExtended = blockState.getValue(BlockStateProperties.EXTENDED);
+            return isExtended ? "Extended" : "Retracted";
+        } else if (blockState.is(Blocks.NOTE_BLOCK)) {
+            int pitch = blockState.getValue(BlockStateProperties.NOTE);
+            return "Pitch: " + pitch;
+        } else if (blockState.is(Blocks.TRIPWIRE_HOOK)) {
+            boolean isPowered = blockState.getValue(BlockStateProperties.POWERED);
+            return isPowered ? "Activated" : "Deactivated";
+        }
+
+        return "";
     }
 
     /**
