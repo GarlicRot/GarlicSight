@@ -27,9 +27,11 @@ jobs:
           sed -i "s/^plugin_version = .*/plugin_version = $new_version/" gradle.properties
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
-          git add gradle.properties
-          git commit -m "Update plugin version to $new_version"
-          git push origin master
+          if ! git diff --quiet gradle.properties; then
+            git add gradle.properties
+            git commit -m "Update plugin version to $new_version"
+            git push origin master
+          fi
           echo "NEW_VERSION=$new_version" >> $GITHUB_ENV
 
       - name: Verify Gradle Wrapper
@@ -44,17 +46,17 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Build Plugin for Master (1.21.4)
+      - name: Build Plugin for Master (1.21.11)
         run: ./gradlew build
 
-      - name: Rename and Upload artifact for master branch (1.21.4)
-        run: mv build/libs/GarlicSight-*.jar build/libs/GarlicSight-1.21.4.jar
+      - name: Rename artifact for master branch (1.21.11)
+        run: mv build/libs/GarlicSight-*.jar build/libs/GarlicSight-1.21.11.jar
 
-      - name: Upload artifact for master branch (1.21.4)
+      - name: Upload artifact for master branch (1.21.11)
         uses: actions/upload-artifact@v4
         with:
           name: GarlicSight-master
-          path: build/libs/GarlicSight-1.21.4.jar
+          path: build/libs/GarlicSight-1.21.11.jar
 
   build-2b:
     needs: build-master
@@ -80,9 +82,11 @@ jobs:
           sed -i "s/^plugin_version = .*/plugin_version = $new_version/" gradle.properties
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
-          git add gradle.properties
-          git commit -m "Update plugin version to $new_version"
-          git push origin 2b
+          if ! git diff --quiet gradle.properties; then
+            git add gradle.properties
+            git commit -m "Update plugin version to $new_version"
+            git push origin 2b
+          fi
           echo "NEW_VERSION=$new_version" >> $GITHUB_ENV
 
       - name: Verify Gradle Wrapper
@@ -160,5 +164,5 @@ jobs:
           automatic_release_tag: "${{ env.NEW_TAG }}"
           prerelease: false
           files: |
-            GarlicSight-master/GarlicSight-1.21.4.jar
+            GarlicSight-master/GarlicSight-1.21.11.jar
             GarlicSight-2b/GarlicSight-1.20.4.jar
